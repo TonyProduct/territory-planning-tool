@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Frontera X — Account</title>
+<style>
+  :root{
+    --surface-page:#ffffff;
+    --surface-primary:#f5f5f5;
+    --surface-secondary:#e8eaeb;
+    --surface-action-1:#00c950;
+    --surface-action-hover-1:#02ae46;
+    --surface-action-2:#0e131e;
+    --text-heading-2:#0e131e;
+    --text-body:#2b2f33;
+    --text-secondary-body:#7e8fa8;
+    --text-error:#ff0026;
+    --border-primary:#e8eaeb;
+    --icon-primary:#7e8fa8;
+    --radius-button:12px;
+    --radius-input:8px;
+    --radius-card:12px;
+    --font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif;
+  }
+  *{box-sizing:border-box;}
+  html,body{height:100%;margin:0;}
+  body{
+    font-family:var(--font-family);
+    color:var(--text-body);
+    background:var(--surface-primary);
+  }
+
+  .app-shell{display:flex;flex-direction:column;min-height:100vh;}
+
+  /* ---------- Navbar ---------- */
+  .navbar{
+    height:64px;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;
+    padding:0 24px;background:var(--surface-page);border-bottom:1px solid var(--border-primary);
+  }
+  .navbar-right{display:flex;align-items:center;gap:28px;}
+  .nav-link{
+    font-size:14px;font-weight:700;color:var(--text-heading-2);text-decoration:none;
+    padding:8px 0;border-bottom:2px solid transparent;
+  }
+  .nav-link.active{color:var(--surface-action-1);border-bottom-color:var(--surface-action-1);}
+  .nav-icon-btn{
+    width:36px;height:36px;border-radius:50%;border:none;background:var(--surface-primary);
+    display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text-heading-2);
+  }
+  .nav-icon-btn:hover{background:var(--surface-secondary);}
+  .logo-tile{
+    width:36px;height:36px;border-radius:9px;background:var(--surface-action-2);
+    display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  }
+  .logo-tile svg{width:13px;height:16.4px;}
+
+  /* ---------- Page body ---------- */
+  .page-body{flex:1;display:flex;justify-content:center;padding:64px 24px;}
+
+  .account-card{
+    width:600px;max-width:100%;background:var(--surface-page);border-radius:var(--radius-card);
+    padding:40px;display:flex;flex-direction:column;align-items:center;
+  }
+
+  .avatar{
+    width:36px;height:36px;border-radius:50%;background:var(--surface-action-2);
+    display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-bottom:12px;
+  }
+  .avatar svg{width:13.5px;height:17px;}
+
+  .account-card h1{font-size:20px;font-weight:700;color:var(--text-heading-2);margin:0 0 32px;}
+
+  .info-list{width:100%;}
+  .info-row{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:18px 0;border-bottom:1px solid var(--border-primary);
+  }
+  .info-row:last-child{border-bottom:none;}
+  .info-row .label{font-size:14px;font-weight:600;color:var(--text-heading-2);}
+  .info-row .value-group{display:flex;align-items:center;gap:10px;}
+  .info-row .value{font-size:14px;color:var(--text-body);}
+  .info-row .value.muted{color:var(--text-secondary-body);}
+
+  .icon-btn{
+    width:32px;height:32px;border-radius:8px;border:none;background:transparent;
+    display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--icon-primary);
+    flex-shrink:0;position:relative;
+  }
+  .icon-btn:hover{background:var(--surface-primary);color:var(--text-heading-2);}
+  .icon-btn:disabled{pointer-events:none;}
+  .icon-btn.copied{color:var(--surface-action-1);}
+
+  .copy-toast{
+    position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);
+    background:var(--surface-action-2);color:#fff;font-size:11px;font-weight:600;
+    padding:4px 8px;border-radius:6px;white-space:nowrap;opacity:0;pointer-events:none;
+    transition:opacity .15s ease;
+  }
+  .icon-btn.copied .copy-toast{opacity:1;}
+
+  .logout-row{
+    display:flex;align-items:center;gap:10px;padding:18px 0 0;margin-top:8px;width:100%;
+    cursor:pointer;color:var(--text-error);background:none;border:none;font-family:var(--font-family);
+    font-size:14px;font-weight:600;text-align:left;
+  }
+  .logout-row:hover{opacity:.75;}
+  .logout-row svg{width:18px;height:18px;flex-shrink:0;}
+
+  /* ---------- Modal overlay ---------- */
+  .modal-overlay{
+    position:fixed;inset:0;background:rgba(14,19,30,.5);display:none;
+    align-items:center;justify-content:center;z-index:1000;
+  }
+  .modal-overlay.open{display:flex;}
+  .modal-dialog{
+    background:var(--surface-page);border-radius:16px;width:420px;max-width:calc(100% - 32px);
+    padding:28px;display:flex;flex-direction:column;gap:24px;
+  }
+  .modal-header{display:flex;align-items:center;justify-content:space-between;}
+  .modal-header h2{font-size:17px;font-weight:700;color:var(--text-heading-2);margin:0;}
+  .modal-close{
+    width:32px;height:32px;border-radius:50%;border:none;background:var(--surface-primary);
+    display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text-heading-2);
+  }
+
+  .setting-row{display:flex;flex-direction:column;gap:10px;}
+  .setting-row .setting-label{font-size:13px;font-weight:600;color:var(--text-secondary-body);text-transform:uppercase;letter-spacing:.03em;}
+
+  .segmented{
+    display:flex;gap:8px;background:var(--surface-secondary);border-radius:100px;padding:4px;width:100%;
+  }
+  .segmented button{
+    flex:1;border:none;background:transparent;border-radius:100px;padding:8px 12px;
+    font-family:var(--font-family);font-size:14px;font-weight:600;color:var(--text-body);
+    cursor:pointer;white-space:nowrap;
+  }
+  .segmented button.active{background:var(--surface-page);}
+
+  .modal-actions{display:flex;justify-content:flex-end;gap:12px;}
+  .btn{
+    font-family:var(--font-family);font-size:14px;border:none;border-radius:var(--radius-button);
+    padding:10px 24px;cursor:pointer;
+  }
+  .btn-outline{background:transparent;border:1px solid var(--border-primary);color:var(--text-heading-2);}
+  .btn-primary{background:var(--surface-action-2);color:#fff;}
+  .navbar-right{flex-wrap:wrap;}
+  .nav-region-link{max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:inline-block;vertical-align:bottom;}
+  .nav-dropdown{position:relative;}
+  .nav-dropdown-trigger{
+    display:flex;align-items:center;gap:4px;background:none;border:none;cursor:pointer;
+    font-family:var(--font-family);
+  }
+  .nav-dropdown-trigger .chev{transition:transform .15s ease;color:var(--icon-primary);}
+  .nav-dropdown.open .nav-dropdown-trigger .chev{transform:rotate(180deg);}
+  .nav-dropdown-menu{
+    position:absolute;top:calc(100% + 12px);right:0;min-width:220px;background:var(--surface-page);
+    border-radius:var(--radius-card);box-shadow:0 8px 24px rgba(0,0,0,.15);padding:8px;
+    display:none;flex-direction:column;gap:2px;z-index:600;
+  }
+  .nav-dropdown.open .nav-dropdown-menu{display:flex;}
+  .nav-dropdown-menu a{
+    display:block;padding:8px 12px;border-radius:8px;font-size:14px;color:var(--text-heading-2);
+    text-decoration:none;max-width:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  }
+  .nav-dropdown-menu a:hover{background:var(--surface-primary);}
+
+  .navbar{display:flex;align-items:center;justify-content:space-between;}
+  .navbar-left{display:flex;align-items:center;gap:16px;flex-wrap:wrap;}
+
+  .country-select{position:relative;}
+  .country-trigger{
+    display:flex;align-items:center;gap:8px;background:var(--surface-primary);border:none;
+    border-radius:var(--radius-button);padding:8px 12px;font-family:var(--font-family);
+    font-size:14px;font-weight:700;color:var(--text-heading-2);cursor:pointer;
+  }
+  .country-trigger:hover{background:var(--surface-secondary);}
+  .country-trigger .flag{font-size:16px;line-height:1;}
+  .country-trigger .chev{color:var(--icon-primary);flex-shrink:0;transition:transform .15s ease;}
+  .country-select.open .country-trigger .chev{transform:rotate(180deg);}
+  .country-dropdown-panel{
+    position:absolute;top:calc(100% + 8px);left:0;width:220px;max-height:340px;overflow-y:auto;
+    background:var(--surface-page);border:1px solid var(--border-primary);border-radius:var(--radius-card);
+    box-shadow:0 8px 24px rgba(0,0,0,.15);padding:4px;display:none;flex-direction:column;gap:2px;z-index:600;
+  }
+  .country-select.open .country-dropdown-panel{display:flex;}
+  .country-dropdown-panel .item{
+    display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:var(--radius-input);
+    font-size:14px;color:var(--text-heading-2);cursor:pointer;background:none;border:none;
+    width:100%;text-align:left;font-family:var(--font-family);
+  }
+  .country-dropdown-panel .item:hover{background:var(--surface-secondary);}
+  .country-dropdown-panel .item.selected{background:var(--surface-success);color:var(--text-success);font-weight:700;}
+  .country-dropdown-panel .item .ic{color:var(--text-success);flex-shrink:0;visibility:hidden;}
+  .country-dropdown-panel .item.selected .ic{visibility:visible;}
+
+</style>
+</head>
+<body>
+
+<div class="app-shell">
+
+  <!-- NAVBAR -->
+  <div class="navbar">
+    <div class="navbar-left">
+      <div class="logo-tile"><svg viewBox="0 0 140 176"><use href="#logo-mark"></use></svg></div>
+
+      <div class="country-select">
+        <button class="country-trigger" onclick="toggleCountryDropdown(event)">
+          <span class="flag" id="country-trigger-flag">🇷🇴</span>
+          <span id="country-trigger-label">Romania</span>
+          <svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M11.9999 13.1714L16.9497 8.22168L18.3639 9.63589L11.9999 15.9999L5.63599 9.63589L7.0502 8.22168L11.9999 13.1714Z"/></svg>
+        </button>
+        <div class="country-dropdown-panel" id="country-dropdown-panel">
+          <button class="item selected" onclick="selectCountry(this,'Romania')"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M9.9997 15.1709L19.1921 5.97852L20.6063 7.39273L9.9997 17.9993L3.63574 11.6354L5.04996 10.2212L9.9997 15.1709Z"/></svg><span class="item-label">Romania</span></button>
+          <button class="item" onclick="selectCountry(this,'Bulgaria')"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M9.9997 15.1709L19.1921 5.97852L20.6063 7.39273L9.9997 17.9993L3.63574 11.6354L5.04996 10.2212L9.9997 15.1709Z"/></svg><span class="item-label">Bulgaria</span></button>
+          <button class="item" onclick="selectCountry(this,'Czechia')"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M9.9997 15.1709L19.1921 5.97852L20.6063 7.39273L9.9997 17.9993L3.63574 11.6354L5.04996 10.2212L9.9997 15.1709Z"/></svg><span class="item-label">Czechia</span></button>
+          <button class="item" onclick="selectCountry(this,'Estonia')"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M9.9997 15.1709L19.1921 5.97852L20.6063 7.39273L9.9997 17.9993L3.63574 11.6354L5.04996 10.2212L9.9997 15.1709Z"/></svg><span class="item-label">Estonia</span></button>
+          <button class="item" onclick="selectCountry(this,'Croatia')"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M9.9997 15.1709L19.1921 5.97852L20.6063 7.39273L9.9997 17.9993L3.63574 11.6354L5.04996 10.2212L9.9997 15.1709Z"/></svg><span class="item-label">Croatia</span></button>
+          <button class="item" onclick="selectCountry(this,'Hungary')"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M9.9997 15.1709L19.1921 5.97852L20.6063 7.39273L9.9997 17.9993L3.63574 11.6354L5.04996 10.2212L9.9997 15.1709Z"/></svg><span class="item-label">Hungary</span></button>
+          <button class="item" onclick="selectCountry(this,'Latvia')"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M9.9997 15.1709L19.1921 5.97852L20.6063 7.39273L9.9997 17.9993L3.63574 11.6354L5.04996 10.2212L9.9997 15.1709Z"/></svg><span class="item-label">Latvia</span></button>
+          <button class="item" onclick="selectCountry(this,'Poland')"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M9.9997 15.1709L19.1921 5.97852L20.6063 7.39273L9.9997 17.9993L3.63574 11.6354L5.04996 10.2212L9.9997 15.1709Z"/></svg><span class="item-label">Poland</span></button>
+          <button class="item" onclick="selectCountry(this,'Portugal')"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M9.9997 15.1709L19.1921 5.97852L20.6063 7.39273L9.9997 17.9993L3.63574 11.6354L5.04996 10.2212L9.9997 15.1709Z"/></svg><span class="item-label">Portugal</span></button>
+          <button class="item" onclick="selectCountry(this,'Slovakia')"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M9.9997 15.1709L19.1921 5.97852L20.6063 7.39273L9.9997 17.9993L3.63574 11.6354L5.04996 10.2212L9.9997 15.1709Z"/></svg><span class="item-label">Slovakia</span></button>
+        </div>
+      </div>
+
+      <a href="frontera-my-regions.html" class="nav-link ">All Sales Regions (2)</a>
+      <a href="frontera-region-details.html" class="nav-link nav-region-link">Region A</a>
+      <a href="frontera-region-details.html" class="nav-link nav-region-link">Region B</a>
+    </div>
+    <div class="navbar-right">
+      <a href="frontera-account.html" class="nav-link active">Account</a>
+      <button class="nav-icon-btn" title="Log out" onclick="document.getElementById('logout-row-btn').click()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M5 22C4.44772 22 4 21.5523 4 21V3C4 2.44772 4.44772 2 5 2H19C19.5523 2 20 2.44772 20 3V6H18V4H6V20H18V18H20V21C20 21.5523 19.5523 22 19 22H5ZM18 16V13H11V11H18V8L23 12L18 16Z"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- PAGE BODY -->
+  <div class="page-body">
+    <div class="account-card">
+      <div class="avatar"><svg viewBox="0 0 140 176"><use href="#logo-mark"></use></svg></div>
+      <h1>Account</h1>
+
+      <div class="info-list">
+        <div class="info-row">
+          <span class="label">Email</span>
+          <div class="value-group">
+            <span class="value muted">anton@digifarm.io</span>
+            <button class="icon-btn" disabled title="" style="cursor:default;opacity:.4;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M6 5V2C6 1.44772 6.44772 1 7 1H21C21.5523 1 22 1.44772 22 2V17C22 17.5523 21.5523 18 21 18H18V21C18 21.5523 17.5523 22 17 22H3C2.44772 22 2 21.5523 2 21V6C2 5.44772 2.44772 5 3 5H6ZM8 5H18C18.5523 5 19 5.44772 19 6V16H20V3H8V5ZM4 7V20H16V7H4Z"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="info-row">
+          <span class="label">Account ID</span>
+          <div class="value-group">
+            <span class="value">ACC-83920-RX</span>
+            <button class="icon-btn" id="copy-btn" onclick="copyAccountId()" title="Copy account ID">
+              <span class="copy-toast">Copied!</span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M6 5V2C6 1.44772 6.44772 1 7 1H21C21.5523 1 22 1.44772 22 2V17C22 17.5523 21.5523 18 21 18H18V21C18 21.5523 17.5523 22 17 22H3C2.44772 22 2 21.5523 2 21V6C2 5.44772 2.44772 5 3 5H6ZM8 5H18C18.5523 5 19 5.44772 19 6V16H20V3H8V5ZM4 7V20H16V7H4Z"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="info-row">
+          <span class="label">Units</span>
+          <div class="value-group">
+            <span class="value" id="units-summary">Hectares, Kilometres, US Dollars ($)</span>
+            <button class="icon-btn" onclick="openUnitsModal()" title="Edit units">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M6.41421 15.89L16.5563 5.74785L15.1421 4.33363L5 14.4758V15.89H6.41421ZM7.24264 17.89H3V13.6473L14.435 2.21231C14.8256 1.82179 15.4587 1.82179 15.8492 2.21231L18.6777 5.04074C19.0682 5.43126 19.0682 6.06443 18.6777 6.45495L7.24264 17.89ZM3 19.89H21V21.89H3V19.89Z"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <button class="logout-row" id="logout-row-btn" onclick="handleLogout()">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M5 22C4.44772 22 4 21.5523 4 21V3C4 2.44772 4.44772 2 5 2H19C19.5523 2 20 2.44772 20 3V6H18V4H6V20H18V18H20V21C20 21.5523 19.5523 22 19 22H5ZM18 16V13H11V11H18V8L23 12L18 16Z"/></svg>
+          Log Out
+        </button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- UNITS MODAL -->
+<div class="modal-overlay" id="units-modal">
+  <div class="modal-dialog">
+    <div class="modal-header">
+      <h2>Units &amp; Currency</h2>
+      <button class="modal-close" onclick="closeUnitsModal()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M11.9997 10.5865L16.9495 5.63672L18.3637 7.05093L13.4139 12.0007L18.3637 16.9504L16.9495 18.3646L11.9997 13.4149L7.04996 18.3646L5.63574 16.9504L10.5855 12.0007L5.63574 7.05093L7.04996 5.63672L11.9997 10.5865Z"/></svg>
+      </button>
+    </div>
+
+    <div class="setting-row">
+      <span class="setting-label">Area</span>
+      <div class="segmented" data-group="area">
+        <button class="active" data-value="Hectares">Hectares</button>
+        <button data-value="Acres">Acres</button>
+      </div>
+    </div>
+
+    <div class="setting-row">
+      <span class="setting-label">Distance</span>
+      <div class="segmented" data-group="distance">
+        <button class="active" data-value="Kilometres">Kilometres</button>
+        <button data-value="Miles">Miles</button>
+      </div>
+    </div>
+
+    <div class="setting-row">
+      <span class="setting-label">Currency</span>
+      <div class="segmented" data-group="currency">
+        <button class="active" data-value="US Dollars ($)">US Dollars ($)</button>
+        <button data-value="Euro (€)">Euro (€)</button>
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeUnitsModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveUnits()">Save</button>
+    </div>
+  </div>
+</div>
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none">
+  <symbol id="logo-mark" viewBox="0 0 140 176"><path d="M138.629 0.599841C140.039 1.35984 139.869 3.09984 139.929 4.55984C139.759 11.8498 140.259 26.1298 139.729 33.3598C138.879 37.9898 132.249 36.9198 128.679 38.0998C120.949 39.4498 114.749 42.5498 108.669 47.0898C103.609 50.8698 99.159 56.0898 95.829 61.3698C94.649 63.7798 90.139 69.4898 95.199 69.2898C104.679 69.6398 127.589 68.7598 138.439 69.6498C140.209 70.4698 139.739 72.9298 139.919 74.6998C139.939 81.6198 139.939 96.5698 139.919 102.1C139.939 105.73 139.399 105.7 134.639 105.65C122.189 105.76 98.139 105.89 89.589 106C84.889 105.95 85.389 111.57 84.059 114.79C74.359 145.74 46.439 169.68 14.199 174.68C10.199 175.11 4.85904 176.45 1.36904 174.55C0.119039 173.6 -0.0109671 171.33 0.0190329 168.04C0.0190329 161.38 -0.000987858 150.35 0.0290121 144.88C-0.0209879 142.09 0.279035 139.87 3.20904 139.02C8.28904 137.67 14.129 137.3 18.919 135.07C23.129 133.42 27.209 131.14 30.829 128.52C37.019 124.18 44.319 115.55 46.529 108.36C47.229 105.97 43.859 105.9 41.889 105.98C38.219 105.98 34.829 105.98 30.359 105.98C21.879 105.98 13.069 106 4.65902 105.98C1.34902 105.92 0.409017 105.86 0.159017 103.01C-0.140983 98.0098 0.0890329 92.9598 0.0190329 87.8098C-0.000967106 83.0698 -0.0109793 75.8498 0.0690207 72.1198C0.129021 71.1498 0.259019 70.5598 0.599019 70.2098C9.18902 68.7198 37.429 69.8498 48.729 69.3098C53.979 69.9798 54.449 64.4698 55.759 60.5699C63.909 34.5398 85.339 12.4498 111.529 4.30984C120.059 1.63984 129.709 -1.25016 138.539 0.569842L138.639 0.619845L138.629 0.599841Z" fill="white"/></symbol>
+</svg>
+
+<script>
+  function copyAccountId(){
+    const id = 'ACC-83920-RX';
+    navigator.clipboard.writeText(id).catch(()=>{});
+    const btn = document.getElementById('copy-btn');
+    btn.classList.add('copied');
+    setTimeout(()=>btn.classList.remove('copied'), 1200);
+  }
+
+  function openUnitsModal(){
+    document.getElementById('units-modal').classList.add('open');
+  }
+  function closeUnitsModal(){
+    document.getElementById('units-modal').classList.remove('open');
+  }
+
+  document.querySelectorAll('.segmented').forEach(group => {
+    group.querySelectorAll('button').forEach(btn => {
+      btn.addEventListener('click', () => {
+        group.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+      });
+    });
+  });
+
+  function saveUnits(){
+    const values = [];
+    document.querySelectorAll('.segmented').forEach(group => {
+      const active = group.querySelector('button.active');
+      values.push(active.getAttribute('data-value'));
+    });
+    document.getElementById('units-summary').textContent = values.join(', ');
+    closeUnitsModal();
+  }
+
+  function handleLogout(){
+    window.location.href = 'frontera-signup.html';
+  }
+
+  // close modal on overlay click (outside dialog)
+  document.getElementById('units-modal').addEventListener('click', function(e){
+    if (e.target === this) closeUnitsModal();
+  });
+  // ---- Shared navbar: region name truncation + "Other regions" dropdown ----
+  function truncateNavRegionNames(){
+    document.querySelectorAll('.nav-region-link').forEach(el => {
+      const full = el.getAttribute('data-region-name') || el.textContent.trim();
+      el.title = full;
+      el.textContent = full.length > 12 ? full.slice(0, 12) + '…' : full;
+    });
+  }
+  truncateNavRegionNames();
+
+  function toggleNavDropdown(e){
+    e.stopPropagation();
+    document.querySelector('.nav-dropdown').classList.toggle('open');
+  }
+  document.addEventListener('click', function(e){
+    const dd = document.querySelector('.nav-dropdown');
+    if (dd && !dd.contains(e.target)) dd.classList.remove('open');
+  });
+
+  // ---- Country dropdown ----
+  function toggleCountryDropdown(e){
+    e.stopPropagation();
+    document.querySelector('.country-select').classList.toggle('open');
+  }
+  const countryFlags = {
+    'Romania':'🇷🇴','Bulgaria':'🇧🇬','Czechia':'🇨🇿','Estonia':'🇪🇪','Croatia':'🇭🇷',
+    'Hungary':'🇭🇺','Latvia':'🇱🇻','Poland':'🇵🇱','Portugal':'🇵🇹','Slovakia':'🇸🇰'
+  };
+  function selectCountry(el, name){
+    document.querySelectorAll('.country-dropdown-panel .item').forEach(i => i.classList.remove('selected'));
+    el.classList.add('selected');
+    document.getElementById('country-trigger-label').textContent = name;
+    document.getElementById('country-trigger-flag').textContent = countryFlags[name] || '🏳️';
+    document.querySelector('.country-select').classList.remove('open');
+  }
+  document.addEventListener('click', function(e){
+    const cs = document.querySelector('.country-select');
+    if (cs && !cs.contains(e.target)) cs.classList.remove('open');
+  });
+
+</script>
+
+</body>
+</html>

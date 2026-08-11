@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Frontera X — Region Details</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<style>
+  :root{
+    --surface-page:#ffffff;
+    --surface-primary:#f5f5f5;
+    --surface-secondary:#e8eaeb;
+    --surface-action-1:#00c950;
+    --surface-action-hover-1:#02ae46;
+    --surface-action-2:#0e131e;
+    --surface-information:#ecf9ff;
+    --surface-warning:#fef8c6;
+    --surface-success:#f1fbe7;
+    --text-heading-2:#0e131e;
+    --text-body:#2b2f33;
+    --text-secondary-body:#7e8fa8;
+    --text-accent:#00c950;
+    --text-information:#1d7afc;
+    --text-warning:#805f10;
+    --text-success:#02ae46;
+    --icon-warning:#dd7208;
+    --icon-information:#1d7afc;
+    --border-primary:#e8eaeb;
+    --border-information:#1d7afc;
+    --surface-error:#fdeaea;
+    --text-error:#ff0026;
+    --icon-primary:#7e8fa8;
+    --radius-button:12px;
+    --radius-input:8px;
+    --radius-card:12px;
+    --radius-alert:8px;
+    --font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif;
+  }
+  *{box-sizing:border-box;}
+  html,body{height:100%;margin:0;}
+  body{font-family:var(--font-family);color:var(--text-body);background:var(--surface-primary);}
+
+  .app-shell{display:flex;flex-direction:column;height:100vh;}
+
+  /* ---------- Navbar ---------- */
+  .navbar{
+    height:64px;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;
+    padding:0 24px;background:var(--surface-page);border-bottom:1px solid var(--border-primary);
+  }
+  .navbar-right{display:flex;align-items:center;gap:28px;}
+  .nav-link{font-size:14px;font-weight:700;color:var(--text-heading-2);text-decoration:none;padding:8px 0;border-bottom:2px solid transparent;}
+  .nav-link.active{color:var(--surface-action-1);border-bottom-color:var(--surface-action-1);}
+  .nav-icon-btn{width:36px;height:36px;border-radius:50%;border:none;background:var(--surface-primary);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text-heading-2);}
+  .nav-icon-btn:hover{background:var(--surface-secondary);}
+  .logo-tile{width:36px;height:36px;border-radius:9px;background:var(--surface-action-2);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .logo-tile svg{width:13px;height:16.4px;}
+
+  /* ---------- Body layout ---------- */
+  .body-row{flex:1;display:flex;min-height:0;}
+  .sidebar{width:480px;flex-shrink:0;padding:24px;overflow-y:auto;display:flex;flex-direction:column;gap:16px;border-right:1px solid var(--border-primary);}
+
+  .page-header{display:flex;align-items:center;gap:12px;margin-bottom:4px;}
+  .back-btn{width:32px;height:32px;border-radius:50%;border:none;background:var(--surface-page);box-shadow:0 1px 3px rgba(0,0,0,.1);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text-heading-2);flex-shrink:0;text-decoration:none;}
+  .region-color-rect{width:8px;height:32px;border-radius:4px;background:var(--surface-action-1);flex-shrink:0;}
+  .header-title-group{display:flex;flex-direction:column;flex:1;min-width:0;}
+  .header-title-group h1{font-size:16px;font-weight:700;color:var(--text-heading-2);margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .header-subtitle{font-size:12px;color:var(--text-secondary-body);}
+  .header-actions{display:flex;align-items:center;gap:4px;flex-shrink:0;}
+  .icon-btn{width:32px;height:32px;border-radius:8px;border:none;background:transparent;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--icon-primary);flex-shrink:0;}
+  .icon-btn:hover{background:var(--surface-secondary);color:var(--text-heading-2);}
+  .icon-btn.danger:hover{background:var(--surface-error);color:var(--text-error);}
+
+  /* ---------- Cards ---------- */
+  .data-card{background:var(--surface-page);border-radius:var(--radius-card);padding:20px;display:flex;flex-direction:column;gap:14px;}
+  .data-card-header{display:flex;align-items:center;justify-content:space-between;}
+  .data-card-header .title-group{display:flex;align-items:center;gap:10px;}
+  .data-card-header h2{font-size:15px;font-weight:700;color:var(--text-heading-2);margin:0;}
+  .status-pill{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;height:24px;padding:0 8px;border-radius:4px;}
+  .status-active{background:var(--surface-success);color:var(--text-success);}
+
+  /* ---------- Alert (reused from kit) ---------- */
+  .alert{display:flex;gap:16px;align-items:flex-start;padding:12px;border-radius:var(--radius-alert);border:1px solid var(--border-primary);background:var(--surface-page);font-size:14px;}
+  .alert .icon{width:20px;height:20px;flex-shrink:0;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;color:#fff;}
+  .alert .title{font-weight:600;margin-bottom:4px;}
+  .alert .body{color:var(--text-body);line-height:20px;}
+  .alert-information{background:var(--surface-information);border-color:var(--border-information);}
+  .alert-information .title{color:var(--text-information);}
+  .alert-information .icon{background:var(--icon-information);}
+
+  .empty-cta{margin-top:4px;}
+  .btn{font-family:var(--font-family);font-size:14px;font-weight:600;border:none;border-radius:var(--radius-button);padding:10px 20px;cursor:pointer;}
+  .btn-primary{background:var(--surface-action-1);color:var(--text-heading-2);}
+  .btn-primary:hover{background:var(--surface-action-hover-1);}
+  .btn-outline{background:transparent;border:1px solid var(--border-primary);color:var(--text-heading-2);}
+
+  /* ---------- Stat grid (Region Overview) ---------- */
+  .stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px 16px;}
+  .stat-grid .item{display:flex;flex-direction:column;gap:4px;}
+  .stat-grid .item .label{font-size:12px;color:var(--text-secondary-body);}
+  .stat-grid .item .value{font-size:15px;font-weight:700;color:var(--text-heading-2);}
+  .stat-grid .item.dash .value{color:var(--text-secondary-body);font-weight:600;}
+  .stat-grid .item.full{grid-column:1 / -1;padding-top:12px;border-top:1px solid var(--border-primary);}
+  .stat-grid .item.full .value{color:var(--text-accent);}
+  .stat-grid .item.full.dash .value{color:var(--text-secondary-body);}
+
+  /* ---------- Staffing ---------- */
+  .staffing-headline{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;}
+  .staffing-headline .big{font-size:28px;font-weight:800;color:var(--text-accent);}
+  .staffing-headline .big.dash{color:var(--text-secondary-body);}
+  .staffing-headline .rest{font-size:15px;font-weight:600;color:var(--text-heading-2);}
+  .staffing-headline .qualifier{font-size:13px;color:var(--text-secondary-body);}
+  .data-desc{font-size:13px;line-height:19px;color:var(--text-secondary-body);}
+
+  /* ---------- Visit planner ---------- */
+  .visits-input-wrap{display:flex;align-items:center;gap:8px;}
+  .visits-input-wrap label{font-size:12px;color:var(--text-secondary-body);}
+  .stepper-wrap{position:relative;width:72px;}
+  .stepper-wrap input{
+    width:100%;font-family:var(--font-family);font-size:14px;color:var(--text-heading-2);font-weight:700;
+    border:1px solid var(--border-primary);border-radius:var(--radius-input);padding:8px 28px 8px 10px;
+  }
+  .stepper-btns{position:absolute;right:1px;top:1px;bottom:1px;width:24px;display:flex;flex-direction:column;border-left:1px solid var(--border-primary);}
+  .stepper-btns button{flex:1;border:none;background:var(--surface-page);color:var(--icon-primary);cursor:pointer;font-size:8px;display:flex;align-items:center;justify-content:center;}
+  .stepper-btns button:first-child{border-bottom:1px solid var(--border-primary);border-top-right-radius:7px;}
+  .stepper-btns button:last-child{border-bottom-right-radius:7px;}
+
+  .planner-summary{font-size:13px;line-height:20px;color:var(--text-body);}
+  .planner-summary b{color:var(--text-accent);font-weight:700;}
+  .planner-summary .qual{color:var(--text-secondary-body);}
+
+  .stops-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px 16px;font-size:13px;}
+  .stop-item{display:flex;align-items:center;gap:6px;color:var(--text-body);}
+  .stop-item .num{color:var(--text-secondary-body);flex-shrink:0;}
+  .stop-item.warn{color:var(--icon-warning);}
+  .stop-item.warn svg{width:14px;height:14px;flex-shrink:0;}
+  .stops-more{font-size:12.5px;color:var(--text-secondary-body);margin-top:2px;}
+
+  /* ---------- Sales Assumptions sliders ---------- */
+  .assumption-slider{display:flex;flex-direction:column;gap:8px;}
+  .assumption-slider .row-top{display:flex;align-items:center;justify-content:space-between;}
+  .assumption-slider .label-group{display:flex;align-items:center;gap:6px;font-size:14px;color:var(--text-heading-2);font-weight:600;}
+  .assumption-slider .pct{font-size:15px;font-weight:700;color:var(--text-heading-2);}
+  .assumption-slider .pct.dash{color:var(--text-secondary-body);}
+  input[type="range"]{
+    -webkit-appearance:none;width:100%;height:6px;border-radius:100px;background:var(--surface-secondary);
+    accent-color:var(--surface-action-1);
+  }
+  input[type="range"]::-webkit-slider-thumb{
+    -webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:var(--surface-action-1);
+    border:2px solid var(--surface-page);box-shadow:0 0 0 1px var(--surface-action-1);cursor:pointer;
+  }
+  input[type="range"]:disabled{accent-color:var(--surface-secondary);opacity:.6;}
+  input[type="range"]:disabled::-webkit-slider-thumb{background:var(--text-secondary-body);box-shadow:none;}
+
+  .info-icon{position:relative;width:14px;height:14px;border-radius:50%;border:1px solid var(--text-secondary-body);color:var(--text-secondary-body);font-size:9px;font-weight:700;font-style:italic;display:flex;align-items:center;justify-content:center;cursor:help;flex-shrink:0;}
+  .info-icon .tooltip-bubble{position:absolute;bottom:calc(100% + 8px);left:0;transform:translateY(4px);background:var(--surface-action-2);color:#fff;font-size:12px;font-weight:400;font-style:normal;line-height:16px;padding:8px 12px;border-radius:8px;white-space:normal;width:200px;opacity:0;visibility:hidden;pointer-events:none;transition:opacity .08s ease, transform .08s ease;z-index:10;}
+  .info-icon .tooltip-bubble::after{content:'';position:absolute;top:100%;left:6px;border:5px solid transparent;border-top-color:var(--surface-action-2);}
+  .info-icon:hover .tooltip-bubble{opacity:1;visibility:visible;transform:translateY(0);transition-delay:.05s;}
+
+  /* ---------- Map ---------- */
+  .map-wrap{flex:1;position:relative;}
+  #map{position:absolute;inset:0;background:#e8eaeb;}
+  .map-search{position:absolute;top:16px;left:16px;right:16px;max-width:380px;z-index:500;background:var(--surface-page);border-radius:var(--radius-button);box-shadow:0 2px 8px rgba(0,0,0,.12);display:flex;align-items:center;gap:10px;padding:12px 16px;}
+  .map-search svg{width:18px;height:18px;color:var(--icon-primary);flex-shrink:0;}
+  .map-search input{border:none;outline:none;font-family:var(--font-family);font-size:14px;width:100%;background:transparent;}
+  .map-search input::placeholder{color:var(--text-secondary-body);}
+  .map-controls{position:absolute;top:16px;right:16px;z-index:500;display:flex;flex-direction:column;gap:8px;}
+  .map-btn{width:36px;height:36px;background:var(--surface-page);border:none;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,.12);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text-heading-2);font-size:16px;}
+  .map-btn:hover{background:var(--surface-primary);}
+  .map-btn-group{display:flex;flex-direction:column;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.12);}
+  .map-btn-group .map-btn{box-shadow:none;border-radius:0;border-bottom:1px solid var(--border-primary);}
+  .map-btn-group .map-btn:last-child{border-bottom:none;}
+  .map-layers-btn{position:absolute;bottom:24px;right:16px;z-index:500;width:40px;height:40px;background:var(--surface-page);border:none;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,.12);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text-heading-2);}
+
+  .map-side-actions{
+    position:absolute;left:16px;top:50%;transform:translateY(-50%);z-index:500;
+    display:flex;flex-direction:column;gap:8px;
+  }
+  .map-action-btn{
+    background:var(--surface-page);border:none;border-radius:var(--radius-button);
+    box-shadow:0 2px 8px rgba(0,0,0,.12);display:flex;align-items:center;gap:8px;
+    padding:10px 16px;font-family:var(--font-family);font-size:14px;font-weight:600;
+    color:var(--text-heading-2);cursor:pointer;white-space:nowrap;
+  }
+  .map-action-btn:hover{background:var(--surface-primary);}
+  .map-action-btn svg{width:18px;height:18px;color:var(--icon-primary);flex-shrink:0;}
+
+  .map-empty-hint{
+    position:absolute;bottom:24px;left:50%;transform:translateX(-50%);z-index:500;
+    background:var(--surface-action-2);color:#fff;font-size:13px;padding:10px 16px;border-radius:var(--radius-button);
+    box-shadow:0 4px 12px rgba(0,0,0,.2);
+  }
+
+  .stop-pin-label{background:var(--surface-action-2);color:#fff;font-weight:700;font-size:10px;width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:2px solid var(--surface-page);box-shadow:0 1px 4px rgba(0,0,0,.2);font-family:var(--font-family);}
+
+  /* ---------- Footer ---------- */
+  .app-footer{height:52px;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;padding:0 24px;background:var(--surface-page);border-top:1px solid var(--border-primary);font-size:13px;color:var(--text-secondary-body);}
+  .app-footer .links{display:flex;gap:20px;}
+  .app-footer a{color:var(--text-secondary-body);text-decoration:underline;}
+
+  .hidden{display:none !important;}
+
+  /* ---------- Delete modal ---------- */
+  .modal-overlay{position:fixed;inset:0;background:rgba(14,19,30,.5);display:none;align-items:center;justify-content:center;z-index:1000;}
+  .modal-overlay.open{display:flex;}
+  .modal-dialog{background:var(--surface-page);border-radius:16px;width:400px;max-width:calc(100% - 32px);padding:28px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px;}
+  .modal-icon-wrap{margin-bottom:8px;}
+  .modal-icon{width:44px;height:44px;border-radius:50%;background:var(--surface-error);color:var(--text-error);display:flex;align-items:center;justify-content:center;}
+  .modal-dialog h2{font-size:17px;font-weight:700;color:var(--text-heading-2);margin:0;}
+  .modal-dialog p{font-size:14px;color:var(--text-secondary-body);line-height:20px;margin:0 0 12px;}
+  .modal-actions{display:flex;gap:12px;width:100%;}
+  .modal-actions .btn{flex:1;}
+  .btn-danger{background:var(--surface-action-2);color:#fff;}
+  .btn-danger:hover{background:#000;}
+  .navbar-right{flex-wrap:wrap;}
+  .nav-region-link{max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:inline-block;vertical-align:bottom;}
+  .nav-dropdown{position:relative;}
+  .nav-dropdown-trigger{
+    display:flex;align-items:center;gap:4px;background:none;border:none;cursor:pointer;
+    font-family:var(--font-family);
+  }
+  .nav-dropdown-trigger .chev{transition:transform .15s ease;color:var(--icon-primary);}
+  .nav-dropdown.open .nav-dropdown-trigger .chev{transform:rotate(180deg);}
+  .nav-dropdown-menu{
+    position:absolute;top:calc(100% + 12px);right:0;min-width:220px;background:var(--surface-page);
+    border-radius:var(--radius-card);box-shadow:0 8px 24px rgba(0,0,0,.15);padding:8px;
+    display:none;flex-direction:column;gap:2px;z-index:600;
+  }
+  .nav-dropdown.open .nav-dropdown-menu{display:flex;}
+  .nav-dropdown-menu a{
+    display:block;padding:8px 12px;border-radius:8px;font-size:14px;color:var(--text-heading-2);
+    text-decoration:none;max-width:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  }
+  .nav-dropdown-menu a:hover{background:var(--surface-primary);}
+
+  .navbar{display:flex;align-items:center;justify-content:space-between;}
+  .navbar-left{display:flex;align-items:center;gap:16px;flex-wrap:wrap;}
+
+  .country-select{position:relative;}
+  .country-trigger{
+    display:flex;align-items:center;gap:8px;background:var(--surface-primary);border:none;
+    border-radius:var(--radius-button);padding:8px 12px;font-family:var(--font-family);
+    font-size:14px;font-weight:700;color:var(--text-heading-2);cursor:pointer;
+  }
+  .country-trigger:hover{background:var(--surface-secondary);}
+  .country-trigger .flag{font-size:16px;line-height:1;}
+  .country-trigger .chev{color:var(--icon-primary);flex-shrink:0;transition:transform .15s ease;}
+  .country-select.open .country-trigger .chev{transform:rotate(180deg);}
+  .country-dropdown-panel{
+    position:absolute;top:calc(100% + 8px);left:0;width:220px;max-height:340px;overflow-y:auto;
+    background:var(--surface-page);border:1px solid var(--border-primary);border-radius:var(--radius-card);
+    box-shadow:0 8px 24px rgba(0,0,0,.15);padding:4px;display:none;flex-direction:column;gap:2px;z-index:600;
+  }
+  .country-select.open .country-dropdown-panel{display:flex;}
+  .country-dropdown-panel .item{
+    display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:var(--radius-input);
+    font-size:14px;color:var(--text-heading-2);cursor:pointer;background:none;border:none;
+    width:100%;text-align:left;font-family:var(--font-family);
+  }
+  .country-dropdown-panel .item:hover{background:var(--surface-secondary);}
+  .country-dropdown-panel .item.selected{background:var(--surface-success);color:var(--text-success);font-weight:700;}
+  .country-dropdown-panel .item .ic{color:var(--text-success);flex-shrink:0;visibility:hidden;}
+  .country-dropdown-panel .item.selected .ic{visibility:visible;}
+
+</style>
+</head>
+<body>
+
+<div class="app-shell">
+
+  <!-- NAVBAR -->
+  <div class="navbar">
+    <div class="navbar-left">
+      <div class="logo-tile"><svg viewBox="0 0 140 176"><use href="#logo-mark"></use></svg></div>
+
+      <div class="country-select">
+        <button class="country-trigger" onclick="toggleCountryDropdown(event)">
+          <span class="flag" id="country-trigger-flag">🇷🇴</span>
+          <span id="country-trigger-label">Romania</span>
+          <svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M11.9999 13.1714L16.9497 8.22168L18.3639 9.63589L11.9999 15.9999L5.63599 9.63589L7.0502 8.22168L11.9999 13.1714Z"/></svg>
+        </button>
+        <div class="country-dropdown-panel" id="country-dropdown-panel">
+          <button class="item selected" onclick="selectCountry(this,'Romania')"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M9.9997 15.1709L19.1921 5.97852L20.6063 7.39273L9.9997 17.9993L3.63574 11.6354L5.04996 10.2212L9.9997 15.1709Z"/></svg><span class="item-label">Romania</span></button>
+          <button class="item" onclick="selectCountry(this,'Bulgaria')"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M9.9997 15.1709L19.1921 5.97852L20.6063 7.39273L9.9997 17.9993L3.63574 11.6354L5.04996 10.2212L9.9997 15.1709Z"/></svg><span class="item-label">Bulgaria</span></button>
+          <button class="item" onclick="selectCountry(this,'Czechia')"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M9.9997 15.1709L19.1921 5.97852L20.6063 7.39273L9.9997 17.9993L3.63574 11.6354L5.04996 10.2212L9.9997 15.1709Z"/></svg><span class="item-label">Czechia</span></button>
+          <button class="item" onclick="selectCountry(this,'Estonia')"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M9.9997 15.1709L19.1921 5.97852L20.6063 7.39273L9.9997 17.9993L3.63574 11.6354L5.04996 10.2212L9.9997 15.1709Z"/></svg><span class="item-label">Estonia</span></button>
+          <button class="item" onclick="selectCountry(this,'Croatia')"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M9.9997 15.1709L19.1921 5.97852L20.6063 7.39273L9.9997 17.9993L3.63574 11.6354L5.04996 10.2212L9.9997 15.1709Z"/></svg><span class="item-label">Croatia</span></button>
+          <button class="item" onclick="selectCountry(this,'Hungary')"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M9.9997 15.1709L19.1921 5.97852L20.6063 7.39273L9.9997 17.9993L3.63574 11.6354L5.04996 10.2212L9.9997 15.1709Z"/></svg><span class="item-label">Hungary</span></button>
+          <button class="item" onclick="selectCountry(this,'Latvia')"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M9.9997 15.1709L19.1921 5.97852L20.6063 7.39273L9.9997 17.9993L3.63574 11.6354L5.04996 10.2212L9.9997 15.1709Z"/></svg><span class="item-label">Latvia</span></button>
+          <button class="item" onclick="selectCountry(this,'Poland')"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M9.9997 15.1709L19.1921 5.97852L20.6063 7.39273L9.9997 17.9993L3.63574 11.6354L5.04996 10.2212L9.9997 15.1709Z"/></svg><span class="item-label">Poland</span></button>
+          <button class="item" onclick="selectCountry(this,'Portugal')"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M9.9997 15.1709L19.1921 5.97852L20.6063 7.39273L9.9997 17.9993L3.63574 11.6354L5.04996 10.2212L9.9997 15.1709Z"/></svg><span class="item-label">Portugal</span></button>
+          <button class="item" onclick="selectCountry(this,'Slovakia')"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M9.9997 15.1709L19.1921 5.97852L20.6063 7.39273L9.9997 17.9993L3.63574 11.6354L5.04996 10.2212L9.9997 15.1709Z"/></svg><span class="item-label">Slovakia</span></button>
+        </div>
+      </div>
+
+      <a href="frontera-my-regions.html" class="nav-link ">All Sales Regions (2)</a>
+      <a href="frontera-region-details.html" class="nav-link nav-region-link active">Region A</a>
+      <a href="frontera-region-details.html" class="nav-link nav-region-link">Region B</a>
+    </div>
+    <div class="navbar-right">
+      <a href="frontera-account.html" class="nav-link ">Account</a>
+      <button class="nav-icon-btn" title="Log out" onclick="window.location.href='frontera-signup.html'">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M5 22C4.44772 22 4 21.5523 4 21V3C4 2.44772 4.44772 2 5 2H19C19.5523 2 20 2.44772 20 3V6H18V4H6V20H18V18H20V21C20 21.5523 19.5523 22 19 22H5ZM18 16V13H11V11H18V8L23 12L18 16Z"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- BODY -->
+  <div class="body-row">
+
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+      <div class="page-header">
+        <a href="frontera-my-regions.html" class="back-btn" title="Back to Sales Regions">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M7.82843 10.9999H20V12.9999H7.82843L13.1924 18.3638L11.7782 19.778L4 11.9999L11.7782 4.22168L13.1924 5.63589L7.82843 10.9999Z"/></svg>
+        </a>
+        <span class="region-color-rect"></span>
+        <div class="header-title-group">
+          <h1 id="region-name">Region A</h1>
+          <span class="header-subtitle">Region details</span>
+        </div>
+        <div class="header-actions">
+          <button class="icon-btn" title="Reset selected area" onclick="resetArea()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M5.46257 4.43262C7.21556 2.86177 9.5007 1.99609 12 1.99609C17.5228 1.99609 22 6.47324 22 11.9961C22 14.1006 21.3556 16.0518 20.2679 17.6572L18.8321 16.2213C19.5772 15.0044 20 13.5555 20 11.9961C20 7.57781 16.4183 3.99609 12 3.99609C10.0221 3.99609 8.21393 4.70097 6.82525 5.87266L5.46257 4.43262ZM18.5374 19.5596C16.7844 21.1304 14.4993 21.9961 12 21.9961C6.47715 21.9961 2 17.5189 2 11.9961C2 9.89158 2.64442 7.94042 3.73206 6.33502L5.16791 7.77086C4.42284 8.98774 4 10.4367 4 11.9961C4 16.4144 7.58172 19.9961 12 19.9961C13.9779 19.9961 15.7861 19.2912 17.1748 18.1195L18.5374 19.5596ZM7 10.9961H2V5.99609L4.10557 8.10166C4.11693 8.08922 4.12838 8.07685 4.13992 8.06455L7 10.9961ZM17 12.9961H22V17.9961L19.8944 15.8905C19.8831 15.9029 19.8716 15.9153 19.8601 15.9276L17 12.9961Z"/></svg>
+          </button>
+          <button class="icon-btn danger" title="Delete region" onclick="openDeleteModal()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M7 4V2H17V4H22V6H20V21C20 21.5523 19.5523 22 19 22H5C4.44772 22 4 21.5523 4 21V6H2V4H7ZM6 6V20H18V6H6ZM9 9H11V17H9V9ZM13 9H15V17H13V9Z"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- EMPTY STATE ALERT -->
+      <div class="alert alert-information" id="empty-alert">
+        <div class="icon">i</div>
+        <div>
+          <div class="title">No area selected</div>
+          <div class="body">Draw or select this region's boundary on the map to see its overview, staffing, and visit plan.</div>
+        </div>
+      </div>
+
+      <!-- REGION OVERVIEW -->
+      <div class="data-card">
+        <div class="data-card-header">
+          <div class="title-group"><h2>Region Overview</h2></div>
+          <span class="status-pill status-active hidden" id="overview-badge">Selected</span>
+        </div>
+        <div class="stat-grid" id="overview-grid">
+          <div class="item dash"><div class="label">Selected area</div><div class="value">—</div></div>
+          <div class="item dash"><div class="label">Cropland area</div><div class="value">—</div></div>
+          <div class="item dash"><div class="label">Fields</div><div class="value">—</div></div>
+          <div class="item dash"><div class="label">Corn area</div><div class="value">—</div></div>
+          <div class="item dash"><div class="label">Sunflower area</div><div class="value">—</div></div>
+          <div class="item dash"><div class="label">WOSR area</div><div class="value">—</div></div>
+          <div class="item dash"><div class="label">Winter wheat area</div><div class="value">—</div></div>
+          <div class="item full dash"><div class="label">All four crops area</div><div class="value">—</div></div>
+        </div>
+      </div>
+
+      <!-- STAFFING -->
+      <div class="data-card">
+        <div class="data-card-header"><h2>Staffing</h2></div>
+        <div class="staffing-headline" id="staffing-headline">
+          <span class="big dash">—</span>
+          <span class="rest">promoters needed</span>
+        </div>
+        <div class="data-desc" id="staffing-desc">Select an area to estimate promoter staffing needs based on crop load.</div>
+      </div>
+
+      <!-- REGION VISIT PLANNER -->
+      <div class="data-card">
+        <div class="data-card-header">
+          <div class="title-group">
+            <h2>Region Visit Planner</h2>
+            <span class="status-pill status-active">Route</span>
+          </div>
+          <div class="visits-input-wrap">
+            <label>visits/day</label>
+            <div class="stepper-wrap">
+              <input type="number" id="visits-per-day" value="23" min="1" onchange="renderPlanner()">
+              <div class="stepper-btns">
+                <button onclick="stepVisits(1)">▲</button>
+                <button onclick="stepVisits(-1)">▼</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="planner-summary" id="planner-summary">Select an area to generate a visit plan.</div>
+
+        <div class="stops-grid" id="stops-grid"></div>
+        <div class="stops-more" id="stops-more"></div>
+      </div>
+
+      <!-- SALES ASSUMPTIONS -->
+      <div class="data-card">
+        <div class="data-card-header"><h2>Sales Assumptions</h2></div>
+
+        <div class="assumption-slider">
+          <div class="row-top">
+            <div class="label-group">Penetration
+              <span class="info-icon">i<span class="tooltip-bubble">Share of addressable growers currently covered in this region.</span></span>
+            </div>
+            <span class="pct dash" id="pen-value">—</span>
+          </div>
+          <input type="range" id="pen-slider" min="0" max="100" value="0" disabled oninput="updateSlider('pen')">
+        </div>
+
+        <div class="assumption-slider">
+          <div class="row-top">
+            <div class="label-group">Concentration
+              <span class="info-icon">i<span class="tooltip-bubble">Share of sales concentrated among the region's top accounts.</span></span>
+            </div>
+            <span class="pct dash" id="con-value">—</span>
+          </div>
+          <input type="range" id="con-slider" min="0" max="100" value="0" disabled oninput="updateSlider('con')">
+        </div>
+
+        <div class="assumption-slider">
+          <div class="row-top">
+            <div class="label-group">Retention
+              <span class="info-icon">i<span class="tooltip-bubble">Share of prior-season growers retained this season.</span></span>
+            </div>
+            <span class="pct dash" id="ret-value">—</span>
+          </div>
+          <input type="range" id="ret-slider" min="0" max="100" value="0" disabled oninput="updateSlider('ret')">
+        </div>
+
+        <div class="data-desc">In production these come from the imported Salesforce data (per region).</div>
+      </div>
+
+    </div>
+
+    <!-- MAP -->
+    <div class="map-wrap">
+      <div id="map"></div>
+
+      <div class="map-search">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.031 16.6168L22.3137 20.8995L20.8995 22.3137L16.6168 18.031C15.0769 19.263 13.124 20 11 20C6.032 20 2 15.968 2 11C2 6.032 6.032 2 11 2C15.968 2 20 6.032 20 11C20 13.124 19.263 15.0769 18.031 16.6168ZM16.0247 15.8748C17.2475 14.6146 18 12.8956 18 11C18 7.1325 14.8675 4 11 4C7.1325 4 4 7.1325 4 11C4 14.8675 7.1325 18 11 18C12.8956 18 14.6146 17.2475 15.8748 16.0247L16.0247 15.8748Z"/></svg>
+        <input type="text" placeholder="Search">
+      </div>
+
+      <div class="map-controls">
+        <div class="map-btn-group">
+          <button class="map-btn" onclick="map.zoomIn()">+</button>
+          <button class="map-btn" onclick="map.zoomOut()">–</button>
+        </div>
+        <button class="map-btn" title="Reset bearing">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L19 21L12 17L5 21L12 2Z"/></svg>
+        </button>
+        <button class="map-btn" title="My location" onclick="locateMe()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M13 3.05493C17.3924 3.55238 20.8236 7.25142 20.9938 11.7605C22.1213 11.8955 23 12.8492 23 14C23 15.1508 22.1213 16.1045 20.9938 16.2395C20.8236 20.7486 17.3924 24.4476 13 24.9451V27H11V24.9451C6.60761 24.4476 3.17642 20.7486 3.00625 16.2395C1.87868 16.1045 1 15.1508 1 14C1 12.8492 1.87868 11.8955 3.00625 11.7605C3.17642 7.25142 6.60761 3.55238 11 3.05493V1H13V3.05493ZM12 5C8.13401 5 5 8.13401 5 12C5 15.866 8.13401 19 12 19C15.866 19 19 15.866 19 12C19 8.13401 15.866 5 12 5ZM12 15C9.79086 15 8 13.2091 8 11C8 8.79086 9.79086 7 12 7C14.2091 7 16 8.79086 16 11C16 13.2091 14.2091 15 12 15Z" transform="translate(0,-1) scale(1,0.93)"/></svg>
+        </button>
+      </div>
+
+      <button class="map-layers-btn" title="Layers">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 16.5L2.5 9L12 1.5L21.5 9L12 16.5ZM12 3.9L5.4 9L12 14.1L18.6 9L12 3.9ZM12 22.5L2.5 15L4 13.8L12 20.1L20 13.8L21.5 15L12 22.5Z"/></svg>
+      </button>
+
+      <div class="map-side-actions">
+        <button class="map-action-btn" onclick="selectArea()" title="Select whole parcels/counties one by one">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 4H10V6H6V10H4V4ZM20 4V10H18V6H14V4H20ZM4 20V14H6V18H10V20H4ZM20 20H14V18H18V14H20V20Z"/></svg>
+          Select
+        </button>
+        <button class="map-action-btn" onclick="selectArea()" title="Draw a custom shape">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 17.2461L14.5385 5.70724L18.795 9.96351L7.25638 21.5024H3V17.2461ZM16.6768 3.29291C17.0673 2.90239 17.7005 2.90239 18.091 3.29291L20.9188 6.12070C21.3093 6.51120 21.3093 7.14440 20.9188 7.53491L19.5017 8.95230L15.2617 4.71230L16.6768 3.29291Z"/></svg>
+          Draw
+        </button>
+      </div>
+
+      <div class="map-empty-hint" id="map-empty-hint">Use "Select" or "Draw" to choose this region's area</div>
+    </div>
+
+  </div>
+
+  <!-- FOOTER -->
+  <div class="app-footer">
+    <div class="links">
+      <a href="#">Terms and Conditions</a>
+      <a href="https://www.pandadoc.com/legal/privacy-notice/" target="_blank" rel="noopener">Privacy Policy</a>
+      <a href="#">Program privacy notice</a>
+    </div>
+    <span>© 2026 Frontera X All rights reserved.</span>
+  </div>
+
+</div>
+
+<!-- DELETE CONFIRMATION MODAL -->
+<div class="modal-overlay" id="delete-modal">
+  <div class="modal-dialog">
+    <div class="modal-icon-wrap"><div class="modal-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12C22 17.5228 17.5228 22 12 22ZM11 15V17H13V15H11ZM11 7V13H13V7H11Z"/></svg></div></div>
+    <h2>Delete this region?</h2>
+    <p>Are you sure you want to delete <b id="delete-region-name">Region A</b>? This action can't be undone.</p>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeDeleteModal()">Cancel</button>
+      <button class="btn btn-danger" onclick="confirmDelete()">Delete region</button>
+    </div>
+  </div>
+</div>
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none">
+  <symbol id="logo-mark" viewBox="0 0 140 176"><path d="M138.629 0.599841C140.039 1.35984 139.869 3.09984 139.929 4.55984C139.759 11.8498 140.259 26.1298 139.729 33.3598C138.879 37.9898 132.249 36.9198 128.679 38.0998C120.949 39.4498 114.749 42.5498 108.669 47.0898C103.609 50.8698 99.159 56.0898 95.829 61.3698C94.649 63.7798 90.139 69.4898 95.199 69.2898C104.679 69.6398 127.589 68.7598 138.439 69.6498C140.209 70.4698 139.739 72.9298 139.919 74.6998C139.939 81.6198 139.939 96.5698 139.919 102.1C139.939 105.73 139.399 105.7 134.639 105.65C122.189 105.76 98.139 105.89 89.589 106C84.889 105.95 85.389 111.57 84.059 114.79C74.359 145.74 46.439 169.68 14.199 174.68C10.199 175.11 4.85904 176.45 1.36904 174.55C0.119039 173.6 -0.0109671 171.33 0.0190329 168.04C0.0190329 161.38 -0.000987858 150.35 0.0290121 144.88C-0.0209879 142.09 0.279035 139.87 3.20904 139.02C8.28904 137.67 14.129 137.3 18.919 135.07C23.129 133.42 27.209 131.14 30.829 128.52C37.019 124.18 44.319 115.55 46.529 108.36C47.229 105.97 43.859 105.9 41.889 105.98C38.219 105.98 34.829 105.98 30.359 105.98C21.879 105.98 13.069 106 4.65902 105.98C1.34902 105.92 0.409017 105.86 0.159017 103.01C-0.140983 98.0098 0.0890329 92.9598 0.0190329 87.8098C-0.000967106 83.0698 -0.0109793 75.8498 0.0690207 72.1198C0.129021 71.1498 0.259019 70.5598 0.599019 70.2098C9.18902 68.7198 37.429 69.8498 48.729 69.3098C53.979 69.9798 54.449 64.4698 55.759 60.5699C63.909 34.5398 85.339 12.4498 111.529 4.30984C120.059 1.63984 129.709 -1.25016 138.539 0.569842L138.639 0.619845L138.629 0.599841Z" fill="white"/></symbol>
+  <symbol id="ic-warning" viewBox="0 0 24 24"><path d="M12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12C22 17.5228 17.5228 22 12 22ZM11 15V17H13V15H11ZM11 7V13H13V7H11Z"/></symbol>
+</svg>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+  // ---- Map setup ----
+  const map = L.map('map', { zoomControl:false, attributionControl:true }).setView([45.85, 24.9], 8.5);
+
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+    attribution: '&copy; <a href="https://carto.com/attributions">CARTO</a> &copy; OpenStreetMap contributors',
+    subdomains: 'abcd',
+    maxZoom: 20
+  }).addTo(map);
+
+  function locateMe(){ map.locate({setView:true, maxZoom:12}); }
+
+  let regionLayer = null;
+  let pinLayers = [];
+  let hasArea = false;
+
+  const regionCoords = [
+    [46.35, 24.2], [46.35, 25.6], [45.55, 25.9], [45.35, 24.6], [45.75, 23.9]
+  ];
+
+  // Sample stop coordinates scattered inside the region bounds, for the visible pins
+  const stopCoords = [
+    [46.28,24.35],[46.20,24.55],[46.10,24.75],[46.00,24.95],[45.92,25.10],
+    [45.85,25.25],[45.78,25.05],[45.70,24.85],[45.62,24.65],[45.60,24.45],
+    [45.68,24.30],[45.80,24.20]
+  ];
+
+  const stopsData = [
+    {n:1, area:'20 ha', warn:true, claim:'P9889'},
+    {n:2, area:'20 ha', warn:true, claim:'P9889'},
+    {n:3, area:'20 ha', warn:true, claim:'P9889'},
+    {n:4, area:'area n/a', warn:true, claim:'P9889'},
+    {n:5, area:'250 ha', warn:false, claim:'P9889'},
+    {n:6, area:'150 ha', warn:false, claim:'P9889'},
+    {n:7, area:'190 ha', warn:false, claim:'P9944'},
+    {n:8, area:'190 ha', warn:false, claim:'P9911'},
+    {n:9, area:'190 ha', warn:false, claim:'P9911'},
+    {n:10, area:'190 ha', warn:false, claim:'P9944'},
+    {n:11, area:'190 ha', warn:false, claim:'P9889'},
+    {n:12, area:'100 ha', warn:false, claim:'P0710'}
+  ];
+
+  function selectArea(){
+    if (hasArea) return;
+    hasArea = true;
+
+    // draw region polygon
+    regionLayer = L.polygon(regionCoords, {
+      color:'#0e131e', weight:2, fillColor:'#00c950', fillOpacity:0.25
+    }).addTo(map);
+    map.fitBounds(regionLayer.getBounds(), { padding:[40,40] });
+
+    // drop stop pins
+    stopCoords.forEach((coord, i) => {
+      const icon = L.divIcon({
+        className:'',
+        html:`<div class="stop-pin-label">${i+1}</div>`,
+        iconSize:[20,20]
+      });
+      pinLayers.push(L.marker(coord, {icon}).addTo(map));
+    });
+
+    document.getElementById('map-empty-hint').classList.add('hidden');
+    document.getElementById('empty-alert').classList.add('hidden');
+    document.getElementById('overview-badge').classList.remove('hidden');
+
+    fillOverview();
+    fillStaffing();
+    renderPlanner();
+    fillSalesAssumptions();
+  }
+
+  function resetArea(){
+    if (!hasArea) return;
+    hasArea = false;
+
+    // remove polygon + pins from the map
+    if (regionLayer) { map.removeLayer(regionLayer); regionLayer = null; }
+    pinLayers.forEach(p => map.removeLayer(p));
+    pinLayers = [];
+
+    document.getElementById('map-empty-hint').classList.remove('hidden');
+    document.getElementById('empty-alert').classList.remove('hidden');
+    document.getElementById('overview-badge').classList.add('hidden');
+
+    // reset cards back to empty/dash state
+    document.getElementById('overview-grid').innerHTML = `
+      <div class="item dash"><div class="label">Selected area</div><div class="value">—</div></div>
+      <div class="item dash"><div class="label">Cropland area</div><div class="value">—</div></div>
+      <div class="item dash"><div class="label">Fields</div><div class="value">—</div></div>
+      <div class="item dash"><div class="label">Corn area</div><div class="value">—</div></div>
+      <div class="item dash"><div class="label">Sunflower area</div><div class="value">—</div></div>
+      <div class="item dash"><div class="label">WOSR area</div><div class="value">—</div></div>
+      <div class="item dash"><div class="label">Winter wheat area</div><div class="value">—</div></div>
+      <div class="item full dash"><div class="label">All four crops area</div><div class="value">—</div></div>
+    `;
+    document.getElementById('staffing-headline').innerHTML = `<span class="big dash">—</span><span class="rest">promoters needed</span>`;
+    document.getElementById('staffing-desc').textContent = 'Select an area to estimate promoter staffing needs based on crop load.';
+
+    renderPlanner();
+
+    ['pen','con','ret'].forEach(key => {
+      const slider = document.getElementById(key + '-slider');
+      const valueEl = document.getElementById(key + '-value');
+      slider.value = 0;
+      slider.disabled = true;
+      valueEl.textContent = '—';
+      valueEl.classList.add('dash');
+    });
+
+    map.setView([45.85, 24.9], 8.5);
+  }
+
+  function openDeleteModal(){
+    document.getElementById('delete-region-name').textContent = document.getElementById('region-name').textContent;
+    document.getElementById('delete-modal').classList.add('open');
+  }
+  function closeDeleteModal(){
+    document.getElementById('delete-modal').classList.remove('open');
+  }
+  function confirmDelete(){
+    // in production this would call the delete API before redirecting
+    window.location.href = 'frontera-my-regions.html';
+  }
+  document.getElementById('delete-modal').addEventListener('click', function(e){
+    if (e.target === this) closeDeleteModal();
+  });
+
+  function fillOverview(){
+    const grid = document.getElementById('overview-grid');
+    grid.innerHTML = `
+      <div class="item"><div class="label">Selected area</div><div class="value">81,715 ha</div></div>
+      <div class="item"><div class="label">Cropland area</div><div class="value">68,940 ha</div></div>
+      <div class="item"><div class="label">Fields</div><div class="value">22,180</div></div>
+      <div class="item"><div class="label">Corn area</div><div class="value">15,000 ha</div></div>
+      <div class="item"><div class="label">Sunflower area</div><div class="value">9,420 ha</div></div>
+      <div class="item"><div class="label">WOSR area</div><div class="value">6,180 ha</div></div>
+      <div class="item"><div class="label">Winter wheat area</div><div class="value">10,340 ha</div></div>
+      <div class="item full"><div class="label">All four crops area</div><div class="value">40,940 ha</div></div>
+    `;
+  }
+
+  function fillStaffing(){
+    document.getElementById('staffing-headline').innerHTML = `
+      <span class="big">12</span>
+      <span class="rest">promoters needed</span>
+      <span class="qualifier">(@ 15,000 ha Corn)</span>
+    `;
+    document.getElementById('staffing-desc').textContent =
+      'Corn load spans ~12 promoters (@ 15,000 ha). Consider splitting into contiguous sub-territories.';
+  }
+
+  function stepVisits(delta){
+    const input = document.getElementById('visits-per-day');
+    input.value = Math.max(1, parseInt(input.value || '1', 10) + delta);
+    renderPlanner();
+  }
+
+  function renderPlanner(){
+    const visitsPerDay = parseInt(document.getElementById('visits-per-day').value || '1', 10);
+    const summaryEl = document.getElementById('planner-summary');
+    const gridEl = document.getElementById('stops-grid');
+    const moreEl = document.getElementById('stops-more');
+
+    if (!hasArea){
+      summaryEl.textContent = 'Select an area to generate a visit plan.';
+      gridEl.innerHTML = '';
+      moreEl.textContent = '';
+      return;
+    }
+
+    const totalStops = 281;
+    const claimsFirst = 4;
+    const totalArea = '81,715 ha';
+    const driveKm = '~2,957 km';
+    const days = Math.ceil(totalStops / visitsPerDay);
+
+    summaryEl.innerHTML = `<b>${totalStops}</b> stops · <b>${claimsFirst}</b> claims first · <b>${totalArea}</b> · ${driveKm} drive · <b>${days}</b> days @ ${visitsPerDay}/day <span class="qual">(all enrolled fields)</span>`;
+
+    gridEl.innerHTML = stopsData.map(s => `
+      <div class="stop-item ${s.warn ? 'warn' : ''}">
+        <span class="num">${s.n}.</span>
+        ${s.warn ? '<svg viewBox="0 0 24 24" fill="currentColor"><use href="#ic-warning"></use></svg>' : ''}
+        <span>${s.area} · ${s.claim}</span>
+      </div>
+    `).join('');
+
+    moreEl.textContent = `+ ${totalStops - stopsData.length} more stops numbered on the map`;
+  }
+
+  function fillSalesAssumptions(){
+    setSlider('pen', 23);
+    setSlider('con', 71);
+    setSlider('ret', 34);
+  }
+
+  function setSlider(key, val){
+    const slider = document.getElementById(key + '-slider');
+    const valueEl = document.getElementById(key + '-value');
+    slider.value = val;
+    slider.disabled = false;
+    valueEl.textContent = val + '%';
+    valueEl.classList.remove('dash');
+  }
+
+  function updateSlider(key){
+    const slider = document.getElementById(key + '-slider');
+    const valueEl = document.getElementById(key + '-value');
+    valueEl.textContent = slider.value + '%';
+  }
+  // ---- Shared navbar: region name truncation + "Other regions" dropdown ----
+  function truncateNavRegionNames(){
+    document.querySelectorAll('.nav-region-link').forEach(el => {
+      const full = el.getAttribute('data-region-name') || el.textContent.trim();
+      el.title = full;
+      el.textContent = full.length > 12 ? full.slice(0, 12) + '…' : full;
+    });
+  }
+  truncateNavRegionNames();
+
+  function toggleNavDropdown(e){
+    e.stopPropagation();
+    document.querySelector('.nav-dropdown').classList.toggle('open');
+  }
+  document.addEventListener('click', function(e){
+    const dd = document.querySelector('.nav-dropdown');
+    if (dd && !dd.contains(e.target)) dd.classList.remove('open');
+  });
+
+  // ---- Country dropdown ----
+  function toggleCountryDropdown(e){
+    e.stopPropagation();
+    document.querySelector('.country-select').classList.toggle('open');
+  }
+  const countryFlags = {
+    'Romania':'🇷🇴','Bulgaria':'🇧🇬','Czechia':'🇨🇿','Estonia':'🇪🇪','Croatia':'🇭🇷',
+    'Hungary':'🇭🇺','Latvia':'🇱🇻','Poland':'🇵🇱','Portugal':'🇵🇹','Slovakia':'🇸🇰'
+  };
+  function selectCountry(el, name){
+    document.querySelectorAll('.country-dropdown-panel .item').forEach(i => i.classList.remove('selected'));
+    el.classList.add('selected');
+    document.getElementById('country-trigger-label').textContent = name;
+    document.getElementById('country-trigger-flag').textContent = countryFlags[name] || '🏳️';
+    document.querySelector('.country-select').classList.remove('open');
+  }
+  document.addEventListener('click', function(e){
+    const cs = document.querySelector('.country-select');
+    if (cs && !cs.contains(e.target)) cs.classList.remove('open');
+  });
+
+</script>
+
+</body>
+</html>

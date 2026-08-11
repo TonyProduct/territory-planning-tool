@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Frontera X — Territory Planning Tool Demo</title>
+<style>
+  :root{
+    --surface-page:#ffffff;--surface-primary:#f5f5f5;--surface-secondary:#e8eaeb;
+    --surface-action-1:#00c950;--surface-action-2:#0e131e;
+    --text-heading-2:#0e131e;--text-body:#2b2f33;--text-secondary-body:#7e8fa8;
+    --border-primary:#e8eaeb;--radius-card:12px;--radius-button:12px;
+    --font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:var(--font-family);background:var(--surface-primary);color:var(--text-body);}
+  .wrap{max-width:880px;margin:0 auto;padding:64px 24px;}
+  .logo-tile{width:48px;height:48px;border-radius:12px;background:var(--surface-action-2);display:flex;align-items:center;justify-content:center;margin-bottom:24px;}
+  .logo-tile svg{width:17px;height:21.4px;}
+  h1{font-size:28px;color:var(--text-heading-2);margin:0 0 8px;}
+  .subtitle{font-size:15px;color:var(--text-secondary-body);margin:0 0 40px;line-height:22px;max-width:560px;}
+  .section-label{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--text-secondary-body);margin:32px 0 12px;}
+  .card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px;}
+  a.page-card{
+    display:block;background:var(--surface-page);border:1px solid var(--border-primary);border-radius:var(--radius-card);
+    padding:20px;text-decoration:none;color:var(--text-heading-2);transition:box-shadow .15s ease, border-color .15s ease;
+  }
+  a.page-card:hover{box-shadow:0 4px 16px rgba(0,0,0,.08);border-color:var(--surface-action-1);}
+  a.page-card .name{font-size:15px;font-weight:700;margin-bottom:4px;}
+  a.page-card .desc{font-size:13px;color:var(--text-secondary-body);line-height:18px;}
+  .footer{margin-top:56px;font-size:13px;color:var(--text-secondary-body);}
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="logo-tile">
+      <svg viewBox="0 0 140 176" fill="white"><path d="M138.629 0.599841C140.039 1.35984 139.869 3.09984 139.929 4.55984C139.759 11.8498 140.259 26.1298 139.729 33.3598C138.879 37.9898 132.249 36.9198 128.679 38.0998C120.949 39.4498 114.749 42.5498 108.669 47.0898C103.609 50.8698 99.159 56.0898 95.829 61.3698C94.649 63.7798 90.139 69.4898 95.199 69.2898C104.679 69.6398 127.589 68.7598 138.439 69.6498C140.209 70.4698 139.739 72.9298 139.919 74.6998C139.939 81.6198 139.939 96.5698 139.919 102.1C139.939 105.73 139.399 105.7 134.639 105.65C122.189 105.76 98.139 105.89 89.589 106C84.889 105.95 85.389 111.57 84.059 114.79C74.359 145.74 46.439 169.68 14.199 174.68C10.199 175.11 4.85904 176.45 1.36904 174.55C0.119039 173.6 -0.0109671 171.33 0.0190329 168.04C0.0190329 161.38 -0.000987858 150.35 0.0290121 144.88C-0.0209879 142.09 0.279035 139.87 3.20904 139.02C8.28904 137.67 14.129 137.3 18.919 135.07C23.129 133.42 27.209 131.14 30.829 128.52C37.019 124.18 44.319 115.55 46.529 108.36C47.229 105.97 43.859 105.9 41.889 105.98C38.219 105.98 34.829 105.98 30.359 105.98C21.879 105.98 13.069 106 4.65902 105.98C1.34902 105.92 0.409017 105.86 0.159017 103.01C-0.140983 98.0098 0.0890329 92.9598 0.0190329 87.8098C-0.000967106 83.0698 -0.0109793 75.8498 0.0690207 72.1198C0.129021 71.1498 0.259019 70.5598 0.599019 70.2098C9.18902 68.7198 37.429 69.8498 48.729 69.3098C53.979 69.9798 54.449 64.4698 55.759 60.5699C63.909 34.5398 85.339 12.4498 111.529 4.30984C120.059 1.63984 129.709 -1.25016 138.539 0.569842L138.639 0.619845L138.629 0.599841Z"/></svg>
+    </div>
+    <h1>Frontera X — Territory Planning Tool</h1>
+    <p class="subtitle">Working prototype and design system for the sales territory planner. Click any page below to open it — everything is linked together, so you can click through the whole flow from Sales Regions onward.</p>
+
+    <div class="section-label">Application flow</div>
+    <div class="card-grid">
+      <a class="page-card" href="frontera-my-regions.html">
+        <div class="name">Sales Regions</div>
+        <div class="desc">Main region list, country overview, map with drawn territories.</div>
+      </a>
+      <a class="page-card" href="frontera-region-details.html">
+        <div class="name">Region Details</div>
+        <div class="desc">Overview, staffing, visit planner, sales assumptions for a single region.</div>
+      </a>
+      <a class="page-card" href="frontera-country-details.html">
+        <div class="name">Country Details</div>
+        <div class="desc">Country overview, Corteva sales data, INSSE validation, Salesforce upload.</div>
+      </a>
+      <a class="page-card" href="frontera-account.html">
+        <div class="name">Account</div>
+        <div class="desc">Profile, account ID, units &amp; currency preferences, log out.</div>
+      </a>
+      <a class="page-card" href="frontera-signup.html">
+        <div class="name">Sign up / Log in</div>
+        <div class="desc">Create account and verify-identity flow.</div>
+      </a>
+    </div>
+
+    <div class="section-label">Design system</div>
+    <div class="card-grid">
+      <a class="page-card" href="frontera-ui-kit-full.html">
+        <div class="name">UI Kit + Icon Library</div>
+        <div class="desc">Full design system reference: tokens, components, badges, and 2,267 icons.</div>
+      </a>
+    </div>
+
+    <div class="footer">© 2026 Frontera X — internal demo, not for public distribution.</div>
+  </div>
+</body>
+</html>
