@@ -650,6 +650,10 @@
       currentRegion = regions[0];
     } else {
       window.location.href = 'frontera-my-regions.html';
+      // window.location.href does NOT stop script execution synchronously —
+      // provide a harmless placeholder so the rest of this script can't throw
+      // in the brief moment before the browser actually navigates away.
+      currentRegion = { id: null, name: 'Region', color: '#00c950', geometry: null, areaHa: 0 };
     }
   }
 
