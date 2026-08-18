@@ -281,9 +281,8 @@
         </div>
       </div>
 
-      <a href="frontera-my-regions.html" class="nav-link active">All Sales Regions (2)</a>
-      <a href="frontera-region-details.html" class="nav-link nav-region-link">Region A</a>
-      <a href="frontera-region-details.html" class="nav-link nav-region-link">Region B</a>
+      <a href="frontera-my-regions.html" class="nav-link active">All Sales Regions (<span id="nav-all-regions-count">0</span>)</a>
+      <div id="navbar-region-tabs"></div>
     </div>
     <div class="navbar-right">
       <a href="frontera-account.html" class="nav-link ">Account</a>
@@ -480,14 +479,40 @@
     }
   }
   // ---- Shared navbar: region name truncation + "Other regions" dropdown ----
-  function truncateNavRegionNames(){
-    document.querySelectorAll('.nav-region-link').forEach(el => {
-      const full = el.getAttribute('data-region-name') || el.textContent.trim();
-      el.title = full;
-      el.textContent = full.length > 12 ? full.slice(0, 12) + '…' : full;
-    });
+  const REGIONS_KEY = 'frontera_regions_v1';
+  function loadRegions(){
+    try { return JSON.parse(localStorage.getItem(REGIONS_KEY)) || []; }
+    catch(e){ return []; }
   }
-  truncateNavRegionNames();
+  function truncateName(name){
+    return name.length > 12 ? name.slice(0, 12) + '…' : name;
+  }
+  function renderRegionNavTabs(){
+    const regions = loadRegions();
+    const names = regions.map(r => r.name);
+    const container = document.getElementById('navbar-region-tabs');
+    document.getElementById('nav-all-regions-count').textContent = regions.length;
+    const visible = names.length <= 4 ? names : names.slice(0, 3);
+    const hidden = names.length <= 4 ? [] : names.slice(3);
+
+    let html = visible.map((name, i) => `<a href="frontera-region-details.html?region=${regions[i].id}" class="nav-link nav-region-link" title="${name}">${truncateName(name)}</a>`).join('');
+
+    if (hidden.length > 0){
+      html += `
+        <div class="nav-dropdown">
+          <button class="nav-link nav-dropdown-trigger" onclick="toggleNavDropdown(event)">
+            Other (${hidden.length})
+            <svg class="chev" width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M11.9999 13.1714L16.9497 8.22168L18.3639 9.63589L11.9999 15.9999L5.63599 9.63589L7.0502 8.22168L11.9999 13.1714Z"/></svg>
+          </button>
+          <div class="nav-dropdown-menu">
+            ${hidden.map((name, i) => `<a href="frontera-region-details.html?region=${regions[i+3].id}" title="${name}">${name}</a>`).join('')}
+          </div>
+        </div>
+      `;
+    }
+    container.innerHTML = html;
+  }
+  renderRegionNavTabs();
 
   function toggleNavDropdown(e){
     e.stopPropagation();
